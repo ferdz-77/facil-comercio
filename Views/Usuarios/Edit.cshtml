@@ -1,0 +1,75 @@
+﻿@model FacilComercio.Models.Usuario
+@{
+    ViewData["Title"] = "Editar Usuário";
+    Layout = "_Layout"; // Define o layout principal com _Nav, _Sidebar e _Footer
+
+    if (ViewData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ViewData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="redirectAfterClose()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+}
+
+<script>
+    function redirectAfterClose() {
+        // Redireciona para a página inicial ou outra página após fechar a mensagem
+        window.location.href = '@Url.Action("Index", "Home")';
+    }
+</script>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Editar Perfil do Usuário</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Edit" method="post" class="form-signin">
+                <input type="hidden" asp-for="Usu_Id" />
+                <div class="form-group mb-3">
+                    <label for="Usu_Nome">Nome</label>
+                    <input type="text" class="form-control" id="Usu_Nome" name="Usu_Nome" value="@Model.Usu_Nome" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="Usu_Email">Email</label>
+                    <input type="email" class="form-control" id="Usu_Email" name="Usu_Email" value="@Model.Usu_Email" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="Usu_SenhaHash">Nova Senha</label>
+                    <input type="password" class="form-control" id="Usu_SenhaHash" name="Usu_SenhaHash" autocomplete="new-password">
+                    <small class="form-text text-muted">Deixe em branco para manter a senha atual.</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Usu_Telefone" class="control-label">Telefone</label>
+                    <input asp-for="Usu_Telefone" class="form-control" type="tel" id="telefone" />
+                    <span asp-validation-for="Usu_Telefone" class="text-danger"></span>
+                </div>
+
+               <div class="form-group">
+                    <label asp-for="Usu_CPF" class="control-label">CPF</label>
+                    <input asp-for="Usu_CPF" class="form-control-plaintext" id="cpf" readonly />
+                    <span asp-validation-for="Usu_CPF" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+        <!-- Carregar jQuery e jQuery Mask Plugin -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+        <script>
+            // Máscara para o campo Telefone
+            $('#telefone').mask('(00) 00000-0000');
+
+        </script>
+}

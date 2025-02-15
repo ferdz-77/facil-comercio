@@ -1,0 +1,140 @@
+﻿@model FacilComercio.Models.Produto
+
+@{
+    ViewData["Title"] = "Editar Produto";
+    Layout = "_Layout"; // Define o layout principal com _Nav, _Sidebar e _Footer
+
+    if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="redirectAfterClose()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+}
+
+<script>
+    function redirectAfterClose() {
+        // Redireciona para a página de listagem de Produtos
+        window.location.href = '@Url.Action("ListarProdutos", "Produtos")';
+    }
+</script>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Editar Produto</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Edit" class="row g-3">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Prod_Id" />
+                <!-- Primeira Linha -->
+                <div class="col-md-4">
+                    <label asp-for="Prod_EAN" class="form-label">Código de Barras (EAN)</label>
+                    <input asp-for="Prod_EAN" id="Prod_EAN" class="form-control" />
+                    <span asp-validation-for="Prod_EAN" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_Nome" class="form-label">Nome do Produto</label>
+                    <input asp-for="Prod_Nome" id="Prod_Nome" class="form-control" required />
+                    <span asp-validation-for="Prod_Nome" class="text-danger"></span>
+
+                </div>
+                <div class="col-md-3">
+                    <label for="categoria">Categoria</label>
+                   @*  <select class="form-select" id="categoria" name="Cat_Id" aria-label="Selecione uma categoria" required>
+                        <option value="" @(Model.Cat_Id == null ? "selected" : "")>Selecione uma categoria</option>
+                        @foreach (var categoria in (List<FacilComercio.Models.Categoria>)ViewBag.Categorias)
+                        {
+                            <option value="@categoria.Cat_Id" @((categoria.Cat_Id == Model.Cat_Id) ? "selected" : "")>
+                                @categoria.Cat_Titulo
+                            </option>
+                        }
+                    </select> *@
+
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Prod_Marca" class="form-label">Marca</label>
+                    <input asp-for="Prod_Marca" id="Prod_Marca" class="form-control" required />
+                    <span asp-validation-for="Prod_Marca" class="text-danger"></span>
+                </div>
+                <!-- Segunda Linha -->
+                <div class="col-md-12">
+                    <label asp-for="Prod_Descricao" class="form-label">Descrição</label>
+                    <textarea asp-for="Prod_Descricao" id="Prod_Descricao" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Prod_Descricao" class="text-danger"></span>
+                </div>
+                <!--Terceira linha-->
+                <div class="col-md-3">
+                    <label asp-for="Prod_Estoque" class="form-label">Quantidade em Estoque</label>
+                    <input asp-for="Prod_Estoque" type="number" step="0.01" class="form-control" required />
+                    <span asp-validation-for="Prod_Estoque" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_EstoqueMinimo" class="form-label">Estoque Mínimo</label>
+                    <input asp-for="Prod_EstoqueMinimo" type="number" step="0.01" class="form-control" required />
+                    <span asp-validation-for="Prod_EstoqueMinimo" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_Preco" class="form-label">Preço - R$</label>
+                    <input asp-for="Prod_Preco" class="form-control" required />
+                    <span asp-validation-for="Prod_Preco" class="text-danger"></span>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Prod_UnidadeMedida" class="form-label">Unidade de Medida</label>
+                    <input asp-for="Prod_UnidadeMedida" id="Prod_UnidadeMedida" class="form-control" required />
+                    <span asp-validation-for="Prod_UnidadeMedida" class="text-danger"></span>
+                </div>
+                <div class="col-md-1">
+                    <label asp-for="Prod_Tamanho" class="form-label">Tamanho</label>
+                    <input asp-for="Prod_Tamanho" id="Prod_Tamanho" class="form-control" required />
+                </div>
+                <!--Quarta linha-->
+
+                <div class="col-md-3">
+                    <label asp-for="Prod_NCM" class="form-label">NCM</label>
+                    <input asp-for="Prod_NCM" class="form-control" />
+                    <span asp-validation-for="Prod_NCM" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_CFOP" class="form-label">CFOP</label>
+                    <input asp-for="Prod_CFOP" class="form-control" />
+                    <span asp-validation-for="Prod_CFOP" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_ImagemUrl" class="form-label">Imagem do Produto</label>
+                    <input type="file" class="form-control" id="uploadImage" name="UploadImage" accept="image/*" />
+                </div>
+                <div class="col-md-3">
+                    <img id="previewImage"
+                         src="@(string.IsNullOrEmpty(Model.Prod_ImagemUrl) ? "#" : Model.Prod_ImagemUrl)"
+                         alt="Preview da Imagem"
+                         class="img-thumbnail"
+                         style="max-width: 200px; @(string.IsNullOrEmpty(Model.Prod_ImagemUrl) ? "display:none;" : "display:block;")" />
+
+                </div>
+
+
+                <div class="form-group">
+                    <input type="submit" value="Salvar" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <!-- Carregar jQuery e jQuery Mask Plugin -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+    <script>
+        // Máscara para o campo Telefone
+        $('#telefone').mask('(00) 00000-0000');
+    </script>
+}

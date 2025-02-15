@@ -1,0 +1,226 @@
+﻿@model FacilComercio.Models.Produto
+@{
+    ViewData["Title"] = "Cadastro de Produto";
+    Layout = "_Layout"; // Define o layout principal
+
+    if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="redirectAfterClose()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+}
+<script>
+    function redirectAfterClose() {
+        // Redireciona para a página inicial ou outra página após fechar a mensagem
+        window.location.href = '@Url.Action("Index", "Home")';
+    }
+</script>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Cadastro de Produto</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data" class="row g-3">
+
+                <!-- NOVO FORMATO -->
+                <!-- Primeira Linha -->
+                <div class="col-md-2">
+                    <label asp-for="Prod_EAN" class="form-label">Código de Barras (EAN)</label>
+                    <input asp-for="Prod_EAN" id="Prod_EAN" class="form-control" />
+                    <span asp-validation-for="Prod_EAN" class="text-danger"></span>
+                </div>
+                <div class="col-md-2">
+                    <label style="display: block;">&nbsp;</label>
+                    <button type="button" class="btn btn-info" onclick="fetchProductData()" style="width: 188px;">Pesquisar Informações</button>
+
+                    <!-- Botão de "Pesquisando..." (inicialmente oculto) -->
+                    <button class="btn btn-primary" type="button" id="loadingButton" style="display:none; width: 188px;" disabled>
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Pesquisando...
+                    </button>
+
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_Nome" class="form-label">Nome do Produto</label>
+                    <input asp-for="Prod_Nome" id="Prod_Nome" class="form-control" required />
+                    <span asp-validation-for="Prod_Nome" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label for="categoria">Categoria</label>
+                    <select class="form-select" id="categoria" name="Cat_Id" aria-label="Selecione uma categoria" required>
+                        <option value="" selected>Selecione uma categoria</option>
+                        @foreach (var categoria in ViewBag.Categorias as List<FacilComercio.Models.Categoria>)
+                        {
+                            <option value="@categoria.Cat_Id">@categoria.Cat_Titulo</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Prod_Marca" class="form-label">Marca</label>
+                    <input asp-for="Prod_Marca" id="Prod_Marca" class="form-control" required />
+                    <span asp-validation-for="Prod_Marca" class="text-danger"></span>
+                </div>
+                <!-- Segunda Linha -->
+                <div class="col-md-12">
+                    <label asp-for="Prod_Descricao" class="form-label">Descrição</label>
+                    <textarea asp-for="Prod_Descricao" id="Prod_Descricao" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Prod_Descricao" class="text-danger"></span>
+                </div>
+                <!--Terceira linha-->
+                <div class="col-md-3">
+                    <label asp-for="Prod_Estoque" class="form-label">Quantidade em Estoque</label>
+                    <input asp-for="Prod_Estoque" type="number" step="0.01" class="form-control" required />
+                    <span asp-validation-for="Prod_Estoque" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_EstoqueMinimo" class="form-label">Estoque Mínimo</label>
+                    <input asp-for="Prod_EstoqueMinimo" type="number" value="0" step="0.01" class="form-control" required />
+                    <span asp-validation-for="Prod_EstoqueMinimo" class="text-danger"></span>
+                </div>
+                <!--Quarta linha-->
+                <div class="col-md-3">
+                    <label asp-for="Prod_Preco" class="form-label">Preço - R$</label>
+                    <input asp-for="Prod_Preco" class="form-control" required />
+                    <span asp-validation-for="Prod_Preco" class="text-danger"></span>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Prod_UnidadeMedida" class="form-label">Unidade de Medida</label>
+                    <input asp-for="Prod_UnidadeMedida" id="Prod_UnidadeMedida" class="form-control" required />
+                    <span asp-validation-for="Prod_UnidadeMedida" class="text-danger"></span>
+                </div>
+                <div class="col-md-1">
+                    <label asp-for="Prod_Tamanho" class="form-label">Tamanho</label>
+                    <input asp-for="Prod_Tamanho" id="Prod_Tamanho" class="form-control" required />
+                </div>
+                <!--Quinta linha-->
+
+                <div class="col-md-3">
+                    <label asp-for="Prod_NCM" class="form-label">NCM</label>
+                    <input asp-for="Prod_NCM" class="form-control" />
+                    <span asp-validation-for="Prod_NCM" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_CFOP" class="form-label">CFOP</label>
+                    <input asp-for="Prod_CFOP" class="form-control" />
+                    <span asp-validation-for="Prod_CFOP" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Prod_ImagemUrl" class="form-label">Imagem do Produto</label>
+                    <input type="file" class="form-control" id="uploadImage" name="UploadImage" accept="image/*" />
+                </div>
+                <div class="col-md-3">
+                    <img id="previewImage" src="#" alt="Preview da Imagem" class="img-thumbnail" style="max-width: 200px; display:none;" />
+
+
+                    <input type="text" id="Prod_ImagemUrl" name="Prod_ImagemUrl" style="display:none;" value="@Model?.Prod_ImagemUrl ?? ''" />
+
+
+                </div>
+                <!--Sexta linha-->
+                <!-- FIM NOVO FORMATO-->
+                <!-- Botões de Ação -->
+                <div class="col-md-12 mt-4">
+                    <button type="submit" class="btn btn-primary">Salvar Produto</button>
+                    <a href="@Url.Action("Index", "Produtos")" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+    <script>
+
+        // Máscara para o campo Preço
+        $('#Prod_Preco').mask('000.000.000,00', { reverse: true });
+
+
+        // Pré-visualização da imagem
+        document.getElementById('uploadImage').addEventListener('change', function (event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const preview = document.getElementById('previewImage');
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        });
+
+        // Limpar o formulário e mostrar a mensagem de sucesso após salvar
+        $(document).ready(function () {
+            var mensagemSucesso = '@ViewData["MensagemSucesso"]';
+            if (mensagemSucesso) {
+                // Limpa o formulário
+                $('#formProduto')[0].reset();
+                // Exibe a mensagem de sucesso
+                alert(mensagemSucesso);
+            }
+        });
+
+        //Quando o usuário clicar no botão, uma requisição à API será feita com o código EAN fornecido.
+        async function fetchProductData() {
+
+            // Exibe o botão de "Pesquisando..."
+            document.getElementById('loadingButton').style.display = 'inline-block';
+
+            // Oculta o botão de "Pesquisar Informações"
+            document.querySelector('.btn-info').style.display = 'none';
+
+            const ean = document.getElementById('Prod_EAN').value;
+            if (!ean) {
+                alert('Por favor, insira um código EAN válido.');
+                // Oculta o "Pesquisando..." e mostra o botão de pesquisar novamente
+                document.getElementById('loadingButton').style.display = 'none';
+                document.querySelector('.btn-info').style.display = 'inline-block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://world.openfoodfacts.org/api/v3/product/${ean}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.product) {
+                        document.getElementById('Prod_Nome').value = data.product.product_name_pt || data.product.product_name || '';
+                        document.getElementById('Prod_Descricao').textContent = data.product.ingredients_text_pt || '';
+                        document.getElementById('Prod_Marca').value = data.product.brands || '';
+                        document.getElementById('Prod_Tamanho').value = data.product.product_quantity || '';
+                        document.getElementById('Prod_UnidadeMedida').value = data.product.product_quantity_unit || '';
+                        document.getElementById('Prod_ImagemUrl').value = data.product.image_url || '';
+                        // Verifica se a imagem existe e atualiza o src da imagem
+                        const previewImage = document.getElementById('previewImage');
+                        const imageUrl = data.product.image_url || '';
+                        previewImage.src = imageUrl;
+
+                        // Se a URL da imagem existir, exibe a imagem
+                        if (imageUrl) {
+                            previewImage.style.display = 'block';
+                        } else {
+                            previewImage.style.display = 'none';
+                        }
+                    } else {
+                        alert('Produto não encontrado.');
+                    }
+                } else {
+                    alert('Erro ao buscar os dados. Tente novamente.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com a API.');
+            }
+
+            // Oculta o "Pesquisando..." e mostra o botão de pesquisar novamente
+            document.getElementById('loadingButton').style.display = 'none';
+            document.querySelector('.btn-info').style.display = 'inline-block';
+        }
+
+    </script>
+}

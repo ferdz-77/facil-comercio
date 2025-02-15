@@ -1,0 +1,123 @@
+﻿@model IEnumerable<FacilComercio.Models.Categoria>
+
+@{
+    ViewData["Title"] = "Listagem de Categorias";
+    Layout = "_Layout"; // Define o layout principal
+}
+<style>
+    .btn-custom-width {
+        width: 100px; /* Ajuste a largura desejada */
+        text-align: center; /* Centraliza o texto */
+    }
+
+    .text-danger td {
+        color: red;
+    }
+
+</style>
+
+<!-- Barra de Busca/Filtros -->
+<div class="container-fluid">
+    <form method="get" class="mb-4">
+        <div class="form-row">
+            <!-- Campo de Busca -->
+            <div class="col-md-4">
+                <input type="text" name="busca" class="form-control" placeholder="Buscar por nome"
+                       value="@ViewContext.HttpContext.Request.Query["busca"]" />
+            </div>
+            
+            <!-- Botão de Filtrar -->
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Botão Adicionar -->
+    <a href="@Url.Action("Create", "Categorias")" class="btn btn-success mb-3">Adicionar Categoria</a>
+
+    <!-- Tabela de Categoria -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var categoria in Model)
+            {
+                <tr class="@(categoria.Cat_Status ? "" : "text-danger")">
+                    <td>@categoria.Cat_Titulo</td>
+                   
+                    <td>
+                        <!-- Botões de ação -->
+                        <a href="/Categorias/Edit/@categoria.Cat_Id" class="btn btn-sm btn-warning btn-custom-width"> ✏️ Editar</a>
+                        <button class="btn btn-sm @((categoria.Cat_Status ? "btn-success" : "btn-danger")) btn-custom-width"
+                                onclick="toggleStatus(@categoria.Cat_Id, @categoria.Cat_Status.ToString().ToLower())">
+                            @if (categoria.Cat_Status)
+                            {
+                                <span>Ativo</span>
+                            }
+                            else
+                            {
+                                <span>Inativo</span>
+                            }
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Paginação -->
+    @if (ViewBag.TotalPaginas > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @if (ViewBag.PaginaAtual > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pagina=@(ViewBag.PaginaAtual - 1)">Anterior</a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == ViewBag.PaginaAtual ? "active" : "")">
+                        <a class="page-link" href="?pagina=@i">@i</a>
+                    </li>
+                }
+                @if (ViewBag.PaginaAtual < ViewBag.TotalPaginas)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pagina=@(ViewBag.PaginaAtual + 1)">Próxima</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Função para alternar status da categoria
+        function toggleStatus(categoriaId, currentStatus) {
+            const newStatus = !currentStatus;
+            fetch(`/Categorias/ToggleStatus?categoriaId=${categoriaId}&status=${newStatus}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload(); // Atualiza a página
+                    } else {
+                        alert('Erro ao atualizar o status da categoria.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error.message);
+                    alert('Erro ao atualizar o status.');
+                });
+        }
+    </script>
+}

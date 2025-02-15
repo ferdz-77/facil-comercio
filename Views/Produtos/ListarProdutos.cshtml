@@ -1,0 +1,142 @@
+﻿@model IEnumerable<FacilComercio.Models.Produto>
+
+@{
+    ViewData["Title"] = "Listagem de Produtos";
+    Layout = "_Layout"; // Define o layout principal
+}
+<style>
+    .btn-custom-width {
+        width: 100px; /* Ajuste a largura desejada */
+        text-align: center; /* Centraliza o texto */
+    }
+
+    .text-danger td {
+        color: red;
+    }
+
+</style>
+
+<!-- Barra de Busca/Filtros -->
+<div class="container-fluid">
+    <form method="get" class="mb-4">
+        <div class="form-row">
+            <!-- Campo de Busca -->
+            <div class="col-md-4">
+                <input type="text" name="busca" class="form-control" placeholder="Buscar por Nome ou Código EAN"
+                       value="@ViewContext.HttpContext.Request.Query["busca"]" />
+            </div>
+            <!-- Filtro por Categoria -->
+            <div class="col-md-3">
+                @*  <select name="filtroCategoria" class="form-control">
+                <option value="">Todas as Categorias</option>
+                @foreach (var categoria in ViewBag.Categorias as List<FacilComercio.Models.Categoria>)
+                {
+                <option value="@categoria.Cat_Id" @(ViewContext.HttpContext.Request.Query["filtroCategoria"] == categoria.Cat_Id.ToString() ? "selected" : "")>
+                @categoria.Cat_Titulo
+                </option>
+                }
+                </select> *@
+            </div>
+            <!-- Botão de Filtrar -->
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Botão Adicionar -->
+    <a href="@Url.Action("Create", "Produtos")" class="btn btn-success mb-3">Adicionar Produto</a>
+
+    <!-- Tabela de Produtos -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>EAN</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var produto in Model)
+            {
+                <tr class="@(produto.Prod_Status ? "" : "text-danger")">
+                    <td>@produto.Prod_Nome</td>
+                    <td>@produto.CategoriaNome</td>  <!-- Este é o campo mapeado que deve ser obtido -->
+                    <td>@produto.Prod_EAN</td>
+                    <td>@produto.Prod_Preco.ToString("C")</td>
+                    <td>@produto.Prod_Estoque</td>
+                    <td>
+                        <!-- Botões de ação -->
+                        <a href="/Produtos/Edit/@produto.Prod_Id" class="btn btn-sm btn-warning btn-custom-width"> ✏️ Editar</a>
+                        @* <a href="/Produtos/Inativar/@produto.Prod_Id" class="btn btn-sm btn-danger btn-custom-width">Inativar</a> *@
+                        <button class="btn btn-sm @((produto.Prod_Status ? "btn-success" : "btn-danger")) btn-custom-width"
+                                onclick="toggleStatus(@produto.Prod_Id, @produto.Prod_Status.ToString().ToLower())">
+                            @if (produto.Prod_Status)
+                            {
+                                <span>Ativo</span>
+                            }
+                            else
+                            {
+                                <span>Inativo</span>
+                            }
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Paginação -->
+    @if (ViewBag.TotalPaginas > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @if (ViewBag.PaginaAtual > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pagina=@(ViewBag.PaginaAtual - 1)">Anterior</a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == ViewBag.PaginaAtual ? "active" : "")">
+                        <a class="page-link" href="?pagina=@i">@i</a>
+                    </li>
+                }
+                @if (ViewBag.PaginaAtual < ViewBag.TotalPaginas)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pagina=@(ViewBag.PaginaAtual + 1)">Próxima</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Função para alternar status do produto
+        function toggleStatus(produtoId, currentStatus) {
+            const newStatus = !currentStatus;
+            fetch(`/Produtos/ToggleStatus?produtoId=${produtoId}&status=${newStatus}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload(); // Atualiza a página
+                    } else {
+                        alert('Erro ao atualizar o status do produto.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error.message);
+                    alert('Erro ao atualizar o status.');
+                });
+        }
+    </script>
+}

@@ -1,0 +1,71 @@
+﻿@model IEnumerable<FacilComercio.Models.Loja>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Loj_Nome)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Loj_Endereco)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Loj_ContatoEm)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Loj_Criado)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Loj_AtualizadoEm)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Empresa)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UsuarioCriador)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                    @Html.DisplayFor(modelItem => item.Loj_Nome)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.Loj_Endereco)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.Loj_ContatoEm)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.Loj_Criado)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.Loj_AtualizadoEm)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Empresa.CNPJ)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.UsuarioCriador.Usu_Email)
+            </td>
+            <td>
+                    <a asp-action="Edit" asp-route-id="@item.Loj_Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Loj_Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Loj_Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

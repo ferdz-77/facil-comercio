@@ -1,0 +1,73 @@
+﻿@model IEnumerable<FacilComercio.Models.RelatorioVendasViewModel>
+@{
+    ViewData["Title"] = "Relatório de Vendas por Período";
+    Layout = "_Layout"; // Define o layout principal com _Nav, _Sidebar e _Footer
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Relatório de Vendas por Período</h1>
+
+    <div class="text-right mb-3">
+        <a class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" asp-action="ExportarRelatorioVendasPeriodo" asp-route-dataInicio="@ViewContext.HttpContext.Request.Query["dataInicio"]" asp-route-dataFim="@ViewContext.HttpContext.Request.Query["dataFim"]" class="btn btn-danger btn-sm">
+            <i class="fas fa-download fa-sm text-white-50"></i> Exportar Relatório PDF
+        </a>
+    </div>
+
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="dataInicio" class="form-label">Data Início:</label>
+                    <input class="form-control form-control-sm" type="date" id="dataInicio" name="dataInicio" value="@ViewContext.HttpContext.Request.Query["dataInicio"]" />
+                </div>
+
+                <div class="col-md-3">
+                    <label for="dataFim" class="form-label">Data Fim:</label>
+                    <input class="form-control form-control-sm" type="date" id="dataFim" name="dataFim" value="@ViewContext.HttpContext.Request.Query["dataFim"]" />
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+
+            </form>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID da Venda</th>
+                            <th>Data</th>
+                            <th>Cliente</th>
+                            <th>Vendedor</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            foreach (var venda in Model)
+                            {
+                                <tr>
+                                    <td>@venda.Ven_Id</td>
+                                    <td>@venda.Ven_Data.ToString("dd/MM/yyyy")</td>
+                                    <td>@venda.Cli_Nome</td>
+                                    <td>@venda.Vendedor</td>
+                                    <td>@venda.Ven_Total.ToString("C")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center">Nenhuma venda encontrada no período selecionado.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,79 @@
+﻿@model FacilComercio.Models.Cliente
+@{
+    ViewData["Title"] = "Inserir Cliente";
+    Layout = "_Layout"; // Define o layout principal com _Nav, _Sidebar e _Footer
+
+    if (ViewData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ViewData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="redirectAfterClose()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+}
+<script>
+    function redirectAfterClose() {
+        // Redireciona para a página inicial ou outra página após fechar a mensagem
+        window.location.href = '@Url.Action("Index", "Home")';
+    }
+</script>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Criar Novo Cliente</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div class="form-group">
+                    <label asp-for="Cli_Nome" class="control-label">Nome</label>
+                    <input asp-for="Cli_Nome" class="form-control" required />
+                    <span asp-validation-for="Cli_Nome" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Cli_Email" class="control-label">Email</label>
+                    <input asp-for="Cli_Email" class="form-control" type="email" required />
+                    <span asp-validation-for="Cli_Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Cli_Telefone" class="control-label">Telefone</label>
+                    <input asp-for="Cli_Telefone" class="form-control" type="tel" id="telefone" required />
+                    <span asp-validation-for="Cli_Telefone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Cli_CPF" class="control-label">CPF</label>
+                    <input asp-for="Cli_CPF" class="form-control" id="cpf" required />
+                    <span asp-validation-for="Cli_CPF" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Cli_Endereco" class="control-label">Endereço</label>
+                    <input asp-for="Cli_Endereco" class="form-control" />
+                    <span asp-validation-for="Cli_Endereco" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Criar Cliente</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Carregar jQuery e jQuery Mask Plugin -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+    <script>
+        // Máscara para o campo Telefone
+        $('#telefone').mask('(00) 00000-0000');
+
+        // Máscara para o campo CPF, aceitando apenas números e limitando a 11 caracteres
+        $('#cpf').mask('000.000.000-00', { reverse: true });
+
+    </script>
+}

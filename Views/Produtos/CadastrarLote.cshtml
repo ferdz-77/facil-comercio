@@ -1,0 +1,160 @@
+﻿@model FacilComercio.Models.LoteViewModel
+
+@{
+    ViewData["Title"] = "Cadastro de Lote";
+    Layout = "_Layout"; // Define o layout principal
+
+    if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="redirectAfterClose()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+}
+
+<script>
+    function redirectAfterClose() {
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.querySelector('.alert-success')) {
+                document.querySelector('form').reset();
+            }
+        });
+    }
+</script>
+
+<style>
+    /* Estilo do autocomplete */
+    #autocompleteList {
+        max-height: 200px; /* Limita a altura da lista */
+        overflow-y: auto; /* Adiciona barra de rolagem se necessário */
+        display: block; /* Inicialmente escondida, será exibida dinamicamente */
+        border-radius: 5px; /* Cantos arredondados */
+    }
+
+        #autocompleteList .list-group-item {
+            cursor: pointer; /* Indica interatividade */
+        }
+
+            #autocompleteList .list-group-item:hover {
+                background-color: #f8f9fa; /* Cor de hover */
+                color: #007bff; /* Texto com destaque */
+            }
+</style>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Cadastro de Lote</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+
+            <form asp-action="SalvarLote" asp-controller="Produtos" method="post">
+                @if (Model.ProdutoId.HasValue)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Produto</label>
+                        <input type="text" class="form-control" value="@Model.NomeProduto" readonly>
+                        <input type="hidden" name="ProdutoId" value="@Model.ProdutoId">
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-3">
+                        <label for="ProdutoId" class="form-label">Produto</label>
+                        <input type="hidden" name="ProdutoId" id="ProdutoId" value="">
+                        <input type="text" id="buscaProduto" name="buscaProduto" class="form-control" placeholder="Digite o nome ou EAN do produto" autocomplete="off" required>
+                        <ul id="autocompleteList" class="list-group position-absolute w-100 shadow" style="z-index: 1000; display: none;"></ul>
+                    </div>
+
+                }
+
+                <div class="mb-3">
+                    <label for="NumeroLote" class="form-label">Número do Lote</label>
+                    <input type="text" id="NumeroLote" name="NumeroLote" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="Quantidade" class="form-label">Quantidade</label>
+                    <input type="number" id="Quantidade" name="Quantidade" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="Validade" class="form-label">Data de Validade</label>
+                    <input type="date" id="Validade" name="Validade" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="@Url.Action("Index", "Produtos")" class="btn btn-secondary">Cancelar</a>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Incluir o jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Incluir o jQuery UI (para autocomplete) -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script>
+
+        document.getElementById('buscaProduto').addEventListener('input', async function () {
+            const termo = this.value;
+
+            if (termo.length < 2) {
+                document.getElementById('autocompleteList').style.display = 'none'; // Esconde a lista se o termo for muito curto
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Produtos/BuscarProdutos?termo=${encodeURIComponent(termo)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const autocompleteList = document.getElementById('autocompleteList');
+                    autocompleteList.innerHTML = '';
+
+                    if (data.produtos.length === 0) {
+                        const noResult = document.createElement('li');
+                        noResult.textContent = "Nenhum produto encontrado";
+                        noResult.className = 'list-group-item text-muted';
+                        autocompleteList.appendChild(noResult);
+                    } else {
+                        data.produtos.forEach(produto => {
+                            const item = document.createElement('li');
+                            item.textContent = `${produto.prod_EAN} - ${produto.prod_Nome}`;
+                            item.className = 'list-group-item list-group-item-action';
+                            item.addEventListener('click', () => selecionarProduto(produto));
+                            autocompleteList.appendChild(item);
+                        });
+                    }
+
+                    autocompleteList.style.display = 'block'; // Mostra a lista
+                }
+            } catch (error) {
+                console.error("Erro ao buscar produtos:", error);
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            const autocompleteList = document.getElementById('autocompleteList');
+            if (!autocompleteList.contains(event.target) && event.target.id !== 'buscaProduto') {
+                autocompleteList.style.display = 'none'; // Esconde a lista se clicar fora
+            }
+        });
+
+        function selecionarProduto(produto) {
+            document.getElementById('buscaProduto').value = `${produto.prod_Nome}`;
+            // Armazena o ID do produto para enviar no formulário
+            document.querySelector('input[name="ProdutoId"]').value = produto.prod_Id;
+
+            // Esconde a lista
+            document.getElementById('autocompleteList').style.display = 'none';
+        }
+
+    </script>
+}

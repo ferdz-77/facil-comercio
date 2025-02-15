@@ -1,0 +1,181 @@
+﻿@model IEnumerable<FacilComercio.Models.Cliente>
+@{
+    ViewData["Title"] = "Listagem de Clientes";
+    Layout = "_Layout"; // Define o layout principal
+}
+<style>
+    .btn-custom-width {
+        width: 100px; /* Ajuste a largura desejada */
+        text-align: center; /* Centraliza o texto */
+    }
+
+    .text-danger td {
+        color: red;
+    }
+
+</style>
+<!-- Barra de Busca/Filtros -->
+<div class="container-fluid">
+    <form method="get" class="mb-4">
+        @Html.AntiForgeryToken()
+
+        <div class="form-row">
+            <div class="col-md-4">
+                <input type="text" name="busca" class="form-control"
+                       placeholder="Buscar por Nome, CPF ou Email"
+                       value="@ViewContext.HttpContext.Request.Query["busca"]" />
+            </div>
+            <div class="col-md-2">
+                <select name="filtroStatus" class="form-control">
+                    @if (ViewContext.HttpContext.Request.Query["filtroStatus"] == "")
+                    {
+                        <option value="" selected="selected">Todos</option>
+                    }
+                    else
+                    {
+                        <option value="">Todos</option>
+                    }
+                    @if (ViewContext.HttpContext.Request.Query["filtroStatus"] == "Ativo")
+                    {
+                        <option value="Ativo" selected="selected">Ativo</option>
+                    }
+                    else
+                    {
+                        <option value="Ativo">Ativo</option>
+                    }
+                    @if (ViewContext.HttpContext.Request.Query["filtroStatus"] == "Inativo")
+                    {
+                        <option value="Inativo" selected="selected">Inativo</option>
+                    }
+                    else
+                    {
+                        <option value="Inativo">Inativo</option>
+                    }
+                </select>
+
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="dataInicio" class="form-control"
+                       value="@ViewContext.HttpContext.Request.Query["dataInicio"]" />
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="dataFim" class="form-control"
+                       value="@ViewContext.HttpContext.Request.Query["dataFim"]" />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+
+    <!-- Botão Adicionar -->
+    <a href="@Url.Action("Create", "Clientes")" class="btn btn-success mb-3">Adicionar Cliente</a>
+
+    <!-- Tabela de Clientes -->
+    <table class="table table-bordered">
+
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                foreach (var cliente in Model)
+                {
+                    <tr class="@(cliente.Cli_Status ? "" : "text-danger")">
+                        <td>@cliente.Cli_Nome</td>
+                        <td>@cliente.Cli_CPF</td>
+                        <td>@cliente.Cli_Email</td>
+                        <td>@(cliente.Cli_Status ? "Ativo" : "Inativo")</td>
+                        <td>
+
+                            <button class="btn btn-sm btn-warning btn-custom-width"
+                                    onclick="window.location.href='/Clientes/Edit/@cliente.Cli_Id'">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn btn-sm @((cliente.Cli_Status ? "btn-success" : "btn-danger")) btn-custom-width"
+                                    onclick="toggleStatus(@cliente.Cli_Id, @cliente.Cli_Status.ToString().ToLower())">
+                                @if (cliente.Cli_Status)
+                                {
+                                    <span>Ativo</span>
+                                }
+                                else
+                                {
+                                    <span>Inativo</span>
+                                }
+                            </button>
+                        </td>
+
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center">Nenhum cliente encontrado.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Paginação -->
+    @if (ViewBag.TotalPaginas > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @if (ViewBag.PaginaAtual > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pagina=@(ViewBag.PaginaAtual - 1)">Anterior</a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == ViewBag.PaginaAtual ? "active" : "")">
+                        <a class="page-link" href="?pagina=@i">@i</a>
+                    </li>
+                }
+                @if (ViewBag.PaginaAtual < ViewBag.TotalPaginas)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pagina=@(ViewBag.PaginaAtual + 1)">Próxima</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+<script>
+    function toggleStatus(clienteId, currentStatus) {
+        const newStatus = !currentStatus; // Inverta o status atual
+
+        // Realiza a requisição para alterar o status
+        fetch(`/Clientes/ToggleStatus?clienteId=${clienteId}&status=${newStatus}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Atualiza a página ou exibe mensagem de sucesso
+                    alert('Status atualizado com sucesso!');
+                    location.reload(); // Atualiza a página
+                } else {
+                    return response.text().then(err => { throw new Error(err); });
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error.message);
+                alert(`Erro ao atualizar o status: ${error.message}`);
+            });
+    }
+
+</script>

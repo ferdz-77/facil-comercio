@@ -1,0 +1,79 @@
+﻿@model IEnumerable<FacilComercio.Models.MovimentacaoEstoqueViewModel>
+@{
+    ViewData["Title"] = "Relatório de Movimentações de Estoque";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Relatório de Movimentações de Estoque</h1>
+
+    <div class="text-right mb-3">
+        <a class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+           asp-action="ExportarRelatorioMovimentacaoEstoque"
+           asp-route-dataInicio="@ViewContext.HttpContext.Request.Query["dataInicio"]"
+           asp-route-dataFim="@ViewContext.HttpContext.Request.Query["dataFim"]"
+           asp-route-usuId="@ViewContext.HttpContext.Request.Query["TipoMovimentacao"]">
+            <i class="fas fa-download fa-sm text-white-50"></i> Exportar Relatório PDF
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                    <label for="dataInicio">Data Início:</label>
+                    <input class="form-control" type="date" id="dataInicio" name="dataInicio" value="@ViewContext.HttpContext.Request.Query["dataInicio"]" />
+                </div>
+                    <div class="col-md-3">
+                    <label for="dataFim">Data Fim:</label>
+                    <input class="form-control" type="date" id="dataFim" name="dataFim" value="@ViewContext.HttpContext.Request.Query["dataFim"]" />
+                </div>
+                <div class="col-md-2">
+                    <label for="tipoMovimentacao">Tipo:</label>
+                    <select class="form-control" id="tipoMovimentacao" name="tipoMovimentacao">
+                        <option value="" selected>Todos</option>
+                        <option value="Entrada">Entrada</option>
+                        <option value="Saída">Saída</option>
+                        <option value="Ajuste">Ajuste</option>
+                    </select>
+                </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+            </form>
+
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Produto</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Mov_Id</td>
+                                <td>@item.Mov_DataMov.ToString("dd/MM/yyyy")</td>
+                                <td>@item.Prod_Nome</td>
+                                <td>@item.Mov_TipoMov</td>
+                                <td>@item.Mov_Quantidade</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">Nenhuma movimentação encontrada no período selecionado.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+﻿@model FacilComercio.Models.Cliente
+
+@{
+    ViewData["Title"] = "Inativar Cliente";
+    Layout = "_Layout";
+}
+
+<h2>Inativar Cliente</h2>
+<p>Tem certeza de que deseja inativar o cliente <strong>@Model.Cli_Nome</strong>?</p>
+
+<form method="post">
+    <input type="hidden" name="id" value="@Model.Cli_Id" />
+    <button type="submit" class="btn btn-danger">Confirmar Inativação</button>
+    <a href="@Url.Action("ListarClientes", "Clientes")" class="btn btn-secondary">Cancelar</a>
+</form>

@@ -1,0 +1,1071 @@
+﻿@{
+    ViewData["Title"] = "PDV - Ponto de Venda";
+    Layout = "_Layout";
+}
+
+<style>
+    footer.fixed-bottom {
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-152 {
+        min-width: 180px;
+    }
+
+    /* Estilo do autocomplete */
+    #autocompleteList {
+        max-height: 200px; /* Limita a altura da lista */
+        overflow-y: auto; /* Adiciona barra de rolagem se necessário */
+        display: block; /* Inicialmente escondida, será exibida dinamicamente */
+        border-radius: 5px; /* Cantos arredondados */
+    }
+
+        #autocompleteList .list-group-item {
+            cursor: pointer; /* Indica interatividade */
+        }
+
+            #autocompleteList .list-group-item:hover {
+                background-color: #f8f9fa; /* Cor de hover */
+                color: #007bff; /* Texto com destaque */
+            }
+
+    #atalhos {
+        font-size: 14px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+    }
+
+        #atalhos ul {
+            list-style-type: none;
+        }
+
+        #atalhos li {
+            margin: 5px 0;
+        }
+
+</style>
+
+
+<div class="container-fluid mt-4">
+    <!-- Cabeçalho da página -->
+    <h2 class="text-center mb-4">Ponto de Venda (PDV)</h2>
+
+    <div id="toast-container" style="position: fixed; top: 10px; right: 10px; z-index: 1050;"></div>
+
+    <!-- Campo de busca rápida -->
+    <div class="row mb-4 position-relative">
+        <div class="col-md-6">
+            <input type="text" id="buscaProduto" class="form-control" placeholder="Buscar por nome ou EAN..." autocomplete="off">
+            <ul id="autocompleteList" class="list-group position-absolute w-100 shadow" style="z-index: 1000; display: none;"></ul>
+        </div>
+
+        <div class="col-md-2 text-end">
+            <button class="btn btn-primary" style="width: 100%;">Buscar</button>
+        </div>
+        <div class="col-md-4 text-end">
+            &nbsp;
+        </div>
+    </div>
+
+
+
+    <div class="row">
+        <!-- Área principal de seleção de produtos -->
+        <div class="col-md-8">
+            <!-- Produtos adicionados -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    Produtos Selecionados
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Vl. Unitário</th>
+                                <th>Quantidade</th>
+                                <th>Desconto R$</th>
+                                <th>Sub-total</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaProdutos">
+                            <!-- PRENCHIMENTO AUTOMÁTICO -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="carrinhoItens">
+                    <!-- Itens do carrinho serão adicionados aqui -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Área lateral para resumo da venda -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    Resumo da Venda
+                </div>
+                <div class="card-body">
+                    <!-- Cliente -->
+                    <label for="clienteCpf">Cliente</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="clienteCpf" placeholder="Buscar cliente por CPF" />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" id="buscarCliente">Buscar</button>
+                        </div>
+                    </div>
+
+                    <!-- Exibição do nome do cliente após buscar pelo CPF -->
+                    <div class="form-group mt-3">
+                        <label for="nomeCliente">Nome do Cliente</label>
+                        <input type="text" class="form-control" id="clienteSelecionado" readonly placeholder="Nome do Cliente" />
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="vendaSemIdentificacao" />
+                        <label class="form-check-label" for="vendaSemIdentificacao">
+                            Venda sem identificação
+                        </label>
+                    </div>
+
+                    <!-- Desconto -->
+                    <div class="mb-3">
+                        <label for="desconto" class="form-label">Desconto Total</label>
+                        <input type="text" id="desconto" class="form-control" placeholder="0%" />
+                    </div>
+
+                    <!-- Total da venda -->
+                    <div class="mb-3">
+                        <h4>Total Geral:<span id="totalGeral">R$ 0,00</span></h4>
+                    </div>
+
+                    <!-- Botão de fechar venda -->
+                  <button id="btnFecharVenda2" style="display: none;" class="btn btn-success btn-lg w-100">Fechar Venda</button>
+
+                    <!-- Botão Condição de Pagamento -->
+                    <button class="btn btn-success btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modalPagamento" id="btnAbrirModalPagamento">
+                        Condição de Pagamento
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="atalhos" class="alert alert-info" style="position: fixed; bottom: 5px; left: 5px; width: 300px; z-index: 1031;">
+    <strong>Teclas de Atalho:</strong>
+    <ul style="margin-bottom: 0; padding-left: 15px;">
+        <li><strong>F1:</strong> Busca Rápida</li>
+        <li><strong>F2:</strong> Desconto Total</li>
+        <li><strong>F4:</strong> Fechar Venda</li>
+    </ul>
+</div>
+
+
+<!-- Modal Condição de Pagamento -->
+<div class="modal fade" id="modalPagamento" tabindex="-1" aria-labelledby="modalPagamentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background-color: #999; color: #FFF;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPagamentoLabel">Condição de Pagamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formPagamento">
+                    <div class="mb-3">
+                        <label for="pix" class="form-label" style="font-size: 1.5rem;">PIX</label>
+                        <input type="text" id="pix" class="form-control" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00">
+                    </div>
+                    <div class="mb-3">
+                        <label for="debito" class="form-label" style="font-size: 1.5rem;">Débito:</label>
+                        <input type="text" class="form-control" id="debito" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00">
+                    </div>
+                    <div class="mb-3">
+                        <label for="credito" class="form-label" style="font-size: 1.5rem;">Crédito:</label>
+                        <input type="text" class="form-control" id="credito" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00">
+                    </div>
+                    <div class="mb-3">
+                        <label for="dinheiro" class="form-label" style="font-size: 1.5rem;">Dinheiro:</label>
+                        <input type="text" class="form-control" id="dinheiro" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00">
+                    </div>
+                   @*  <div class="mb-3">
+                        <label for="valorRestante" class="form-label" style="font-size: 1.5rem;">Valor Restante:</label>
+                        <input type="text" class="form-control" id="valorRestante" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00" readonly>
+                    </div> *@
+
+                    <!-- Divisão em tres colunas -->
+                    <div class="row">
+                        <!-- Valor Total da Compra -->
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="valorTotalCompra" class="form-label" style="font-size: 1.5rem;">Valor Total:</label>
+                                <input type="text" class="form-control" id="valorTotalCompra" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00" readonly>
+                            </div>
+                        </div>
+                        <!-- Valor Restante -->
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="valorRestante" class="form-label" style="font-size: 1.5rem;">Valor Restante:</label>
+                                <input type="text" class="form-control" id="valorRestante" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00" readonly>
+                            </div>
+                        </div>
+                        <!-- Troco -->
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="troco" class="form-label" style="font-size: 1.5rem;">Troco:</label>
+                                <input type="text" class="form-control" id="troco" style="font-size: 1.5rem; height: 3rem;" placeholder="R$ 0,00" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" id="btnFecharVenda">Finalizar Pagamento</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<footer class="fixed-bottom bg-light py-3">
+    <div class="container text-center">
+        <button class="btn btn-secondary mx-2 btn-152" id="suspenderVenda"><i class="fas fa-pause"></i>Suspender Venda</button>
+        <button class="btn btn-warning mx-2 btn-152" id="devolucao"><i class="fas fa-undo"></i> Devolução</button>
+        <button class="btn btn-danger mx-2 btn-152" id="trocas"><i class="fas fa-exchange-alt"></i>Trocas</button>
+    </div>
+</footer>
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            
+            // Teste para ver se o evento de clique está funcionando
+            $('[data-bs-toggle="modal"]').on('click', function () {
+                // Abra o modal manualmente
+                var myModal = new bootstrap.Modal(document.getElementById('modalPagamento'));
+                myModal.show();
+            });
+        });
+
+        document.getElementById('buscaProduto').addEventListener('input', async function () {
+            const termo = this.value;
+
+            if (termo.length < 2) {
+                document.getElementById('autocompleteList').style.display = 'none'; // Esconde a lista se o termo for muito curto
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Produtos/BuscarProdutos?termo=${encodeURIComponent(termo)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const autocompleteList = document.getElementById('autocompleteList');
+                    autocompleteList.innerHTML = '';
+
+                    if (data.produtos.length === 0) {
+                        const noResult = document.createElement('li');
+                        noResult.textContent = "Nenhum produto encontrado";
+                        noResult.className = 'list-group-item text-muted';
+                        autocompleteList.appendChild(noResult);
+                    } else {
+                        data.produtos.forEach(produto => {
+                            const item = document.createElement('li');
+                            item.textContent = `${produto.prod_Nome} - ${produto.preco}`;
+                            item.className = 'list-group-item list-group-item-action';
+                            item.addEventListener('click', () => selecionarProduto(produto));
+                            autocompleteList.appendChild(item);
+                        });
+                    }
+
+
+                    autocompleteList.style.display = 'block'; // Mostra a lista
+                }
+            } catch (error) {
+                console.error("Erro ao buscar produtos:", error);
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            const autocompleteList = document.getElementById('autocompleteList');
+            if (!autocompleteList.contains(event.target) && event.target.id !== 'buscaProduto') {
+                autocompleteList.style.display = 'none'; // Esconde a lista se clicar fora
+            }
+        });
+
+
+
+
+
+        function selecionarProduto(produto) {
+            console.log("Produto selecionado:", produto);
+            document.getElementById('autocompleteList').style.display = 'none'; // Esconde a lista após seleção
+            // Adicione a lógica de adicionar ao carrinho
+            //alert(produto.prod_Id);
+            adicionarAoCarrinho(produto.prod_Id, 1);
+        }
+
+        // Função para Adicionar ao Carrinho
+        function adicionarAoCarrinho(produtoId, quantidade) {
+
+            fetch(`/Vendas/AdicionarAoCarrinho?produtoId=${produtoId}&quantidade=${quantidade}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        atualizarCarrinho(data.carrinho);
+                        exibirToast("Produto adicionado ao carrinho!", "success");
+                    } else {
+                        exibirToast("Erro ao adicionar o produto.", "danger");
+                    }
+                });
+        }
+
+        function atualizarCarrinho(carrinho) {
+            console.log("Carrrinho Recebido: ", carrinho);
+            // alert("entrou aqui");
+
+            const listaProdutos = document.getElementById("listaProdutos"); // Certifique-se de que o ID é o correto!
+
+            // Limpa a lista atual para evitar duplicações
+            listaProdutos.innerHTML = "";
+
+            // Itera pelos itens do carrinho e recria as linhas
+            carrinho.itens.forEach((item, index) => {
+                const row = document.createElement("tr");
+
+                // Adiciona o atributo data-id à linha (tr)
+                row.setAttribute('data-id', item.produtoId);
+
+                // Cria o conteúdo da linha
+                row.innerHTML = `
+                                    <td>${item.nomeProduto}</td>
+                                    <td>R$ <span class="vl-unitario">${item.precoUnitario.toFixed(2)}</span></td>
+                                    <td>
+                                        <input type="number" class="form-control quantidade" value="${item.quantidade}" min="1"
+                                               style="width: 80px;" data-index="${item.produtoId}" />
+                                    </td>
+                                            <td><input type="text" class="form-control desconto" value="0,00" style="width: 80px;" data-index="${index}" placeholder="R$" /></td>
+                                    <td>R$ <span class="sub-total">${item.subTotal}</span></td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm remover-produto" data-index="${index}">Remover</button>
+                                    </td>
+                                `;
+
+                // Adiciona a linha criada ao tbody
+                listaProdutos.appendChild(row);
+            });
+
+            // Atualiza o total do carrinho
+            atualizarTotal(carrinho.total);
+            // alert("aAtualizarCarrinhot");
+            // Enviar o carrinho atualizado para o backend
+            fetch('/Vendas/AtualizarCarrinho', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(carrinho)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.sucesso) {
+                        console.error("Erro ao atualizar o carrinho no backend:", data.mensagem);
+                    } else {
+                        console.log(data.mensagem);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao enviar carrinho para o backend:", error);
+                });
+        }
+
+
+        function atualizarTotal(total) {
+            //console.log("Total:" + total);
+            const totalCarrinho = document.getElementById("totalGeral");
+            totalCarrinho.textContent = `${total}`;
+        }
+
+        document.getElementById("buscarCliente").addEventListener("click", function () {
+            const cpf = document.getElementById("clienteCpf").value;
+
+            if (!cpf) {
+                alert("Por favor, insira um CPF para buscar o cliente.");
+                return;
+            }
+
+            // Simulação de busca por CPF (Substituir por requisição real ao backend)
+            console.log(`Buscando cliente com CPF: ${cpf}`);
+        });
+
+        document.getElementById("vendaSemIdentificacao").addEventListener("change", function () {
+            const isSemIdentificacao = this.checked;
+            document.getElementById("clienteCpf").disabled = isSemIdentificacao;
+            document.getElementById("buscarCliente").disabled = isSemIdentificacao;
+        });
+
+
+
+        // Função para recalcular o subtotal de um produto
+        function atualizarSubtotal(linha) {
+            const quantidade = parseInt(linha.querySelector(".quantidade").value) || 0;
+            const vlUnitario = parseFloat(linha.querySelector(".vl-unitario").textContent.replace(",", ".")) || 0;
+
+            const subtotal = quantidade * vlUnitario;
+            // alert("atualizar sub-total v2");
+            linha.querySelector(".sub-total").textContent = subtotal.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            });
+
+            atualizarTotalGeral();
+        }
+
+        // Função para atualizar o total geral da venda
+        function atualizarTotalGeral(carrinho) {
+
+            console.log("Carrrinho do Atualizar Total Geral: ", carrinho);
+
+
+            if (typeof carrinho === 'undefined') {
+                console.log('Carrinho não definido');
+                return 0;  // Ou qualquer outro valor ou ação desejada
+            }
+
+
+            let total = 0;
+            document.querySelectorAll(".sub-total").forEach((subtotal) => {
+                total += parseFloat(subtotal.textContent.replace("R$", "").replace(",", ".")) || 0;
+            });
+
+            const totalComDesconto = carrinho.total - carrinho.descontoTotal;
+
+            // alert("após novidade");
+
+
+            document.getElementById("totalGeral").textContent = totalComDesconto.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            });
+        }
+
+        // Event listeners
+        document.addEventListener("input", (event) => {
+            if (event.target.classList.contains("quantidade")) {
+                // alert("quantidade");
+                const linha = event.target.closest("tr");
+                atualizarSubtotal(linha);
+            }
+        });
+
+        // Para o campo de desconto, usamos "blur" para atualizar apenas ao sair do campo
+        document.addEventListener("focusout", (event) => {
+            if (event.target.classList.contains("desconto")) {
+                let valor = event.target.value;
+
+                // Remover caracteres não numéricos, exceto vírgula
+                valor = valor.replace(/[^\d,]/g, "");
+
+                // Substituir vírgula por ponto para conversão numérica
+                const desconto = parseFloat(valor.replace(",", "."));
+
+                if (!isNaN(desconto)) {
+                    const index = event.target.dataset.index;
+
+                    // Obtenha o carrinho atualizado
+                    fetch(`/Vendas/ObterCarrinhoAtualizado`)
+                        .then((response) => response.json())
+                        .then((carrinho) => {
+                            // Atualize o desconto do produto individualmente
+                            const item = carrinho.carrinho.itens[index];
+                            item.desconto = desconto; // Armazene o desconto no item do carrinho
+
+                            // Recalcule o subtotal para o produto com o desconto e quantidade
+                            const precoProduto = item.precoUnitario;
+                            const quantidade = item.quantidade;
+                            const valorDesconto = desconto;
+
+                            // Calculando o novo subtotal com o desconto e a quantidade
+                            let novoSubtotal = (precoProduto - valorDesconto) * quantidade;
+
+                            // Garantir que o subtotal tenha 2 casas decimais
+                            novoSubtotal = novoSubtotal.toFixed(2);
+
+                            // Atualizar o subtotal na interface do usuário
+
+                            // document.querySelector(`[data-id="${item.produtoId}"] .sub-total`).textContent = `${novoSubtotal}`;
+
+                            document.querySelector(`[data-id="${item.produtoId}"] .sub-total`).textContent = novoSubtotal.toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL"
+                            });
+
+                            // Recalcular o Total Geral
+                            recalcularTotalGeral(carrinho);
+
+                            // Atualize o carrinho com o novo valor de desconto
+                            // Isso deve enviar o carrinho atualizado para o servidor para salvar o desconto.
+                            fetch(`/Vendas/SalvarDesconto`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ produtoId: item.produtoId, desconto: item.desconto })
+                            });
+                        });
+                }
+            }
+        });
+
+
+
+
+        // FUNÇÕES PARA REMOVER O PRODUTO DO CARRINHO
+        document.addEventListener("click", (event) => {
+            // Verifica se o botão "Remover" foi clicado
+            if (event.target.classList.contains("remover-produto")) {
+                const linha = event.target.closest("tr");
+                const produtoId = linha.getAttribute("data-id");  // Pega o ID do produto da linha
+                //alert("1 - Produto ID" + produtoId);
+                // Remover o produto da interface (HTML)
+                linha.remove();
+                atualizarTotalGeral();  // Atualiza o total geral após remoção do item
+
+                // Chama a função para remover o produto no servidor
+                removerProduto(produtoId);
+            }
+        });
+
+        function removerProduto(produtoId) {
+            if (!produtoId) {
+                alert("Produto ID não encontrado!");
+                return;
+            }
+
+            // Verifique se o produtoId está sendo corretamente passado na URL
+            console.log("Remover produto com ID: ", produtoId);
+
+            fetch(`/Vendas/RemoverProdutoCarrinho`, {  // Não usa produtoId na URL
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ produtoId })  // Envia o produtoId no corpo da requisição
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        // Atualiza o carrinho no cliente
+                        atualizarCarrinho(data.carrinho);
+                        exibirToast("Carrinho atualizado", "success");
+
+                    } else {
+                        alert("Erro ao remover o produto.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao remover o produto:", error);
+                    alert("Erro ao conectar com o servidor.");
+                });
+        }
+
+        // FUNÇÕES PARA ALTERARAR A QUANTIDADE DE PRODUTO DO CARRINHO
+        // Adicionar evento change para alterar quantidade
+        document.addEventListener("change", (event) => {
+            //alert("entrou na chamada");
+            if (event.target.classList.contains("quantidade")) {
+                const produtoId = event.target.getAttribute("data-index");
+                const quantidade = parseInt(event.target.value);
+
+                if (quantidade <= 0) {
+                    alert("Quantidade inválida!");
+                    return;
+                }
+
+                alterarQuantidade(produtoId, quantidade);
+            }
+        });
+
+        // Função para enviar a alteração ao backend
+        function alterarQuantidade(produtoId, quantidade) {
+
+            fetch(`/Vendas/AlterarQuantidade`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ produtoId, quantidade })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        atualizarCarrinho(data.carrinho); // Atualiza o carrinho na interface
+                    } else {
+                        alert(data.mensagem || "Erro ao alterar a quantidade.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao alterar quantidade:", error);
+                    alert("Erro ao conectar com o servidor.");
+                });
+        }
+
+        //DESCONTO
+
+        function generateTemporaryId() {
+            return Math.floor(Math.random() * 90000000) + 10000000; // Gera um ID aleatório com 8 caracteres
+        }
+
+        document.getElementById("desconto").addEventListener("blur", function () {
+            const desconto = parseFloat(this.value.replace(",", ".")); // Verifica e converte o valor para float
+            if (!isNaN(desconto)) {
+                // Verifica se é percentual ou valor monetário
+                const tipoDesconto = this.value.includes("%") ? "percentual" : "monetario";
+                aplicarDescontoTotal(desconto, tipoDesconto); // Aplica o desconto no total
+            }
+        });
+
+        function aplicarDescontoTotal(desconto, tipoDesconto) {
+            // Obter o carrinho atualizado antes de aplicar o desconto
+            fetch('/Vendas/ObterCarrinhoAtualizado')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        const carrinhoAtualizado = data.carrinho;
+
+                        // console.log("Carrinho antes do desconto: ", carrinhoAtualizado);
+
+                        // Verifica qual tipo de desconto foi aplicado (percentual ou monetário)
+                        let valorDescontoTotal = 0;
+
+                        if (tipoDesconto === "percentual") {
+                            // Desconto percentual
+                            valorDescontoTotal = (carrinhoAtualizado.total * desconto) / 100;
+                        } else if (tipoDesconto === "monetario") {
+                            // Desconto monetário fixo
+                            valorDescontoTotal = desconto;
+                        } else {
+                            alert("Tipo de desconto inválido.");
+                            return;  // Evitar enviar a requisição
+                        }
+
+                        // Atualiza o carrinho com o desconto
+                        carrinhoAtualizado.descontoTotal = valorDescontoTotal;
+                        console.log("Carrinho após o desconto : ", carrinhoAtualizado);
+                        // console.log("Novo valor do desconto: ", valorDescontoTotal);
+                        //alert("a");
+
+
+
+                        // Enviar o carrinho atualizado para o backend
+                        fetch('/Vendas/AtualizarCarrinho', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(carrinhoAtualizado)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (!data.sucesso) {
+                                    console.error("Erro ao atualizar o carrinho no backend:", data.mensagem);
+                                } else {
+                                    console.log(data.mensagem);
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Erro ao enviar carrinho para o backend:", error);
+                            });
+
+
+
+                        // alert("b");
+                        // Aplica o desconto ao carrinho
+                        fetch(`/Vendas/AplicarDescontoTotal`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                carrinho: carrinhoAtualizado,  // Envia o carrinho com o desconto aplicado
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.sucesso) {
+                                    console.log("Carrinho após o desconto v2 : ", carrinhoAtualizado);
+                                    // alert("b");
+                                    // Atualiza o total com o desconto aplicado
+                                    // console.log("Carrinho após o desconto v3 : ", data.carrinho);
+                                    atualizarCarrinho(carrinhoAtualizado);
+                                    atualizarTotalGeral(carrinhoAtualizado); // Atualiza o total geral
+                                } else {
+                                    alert("Erro ao aplicar o desconto total.");
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Erro ao aplicar desconto:", error);
+                                alert("Erro ao aplicar desconto. Tente novamente.");
+                            });
+
+                    } else {
+                        alert("Erro ao obter o carrinho atualizado.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao obter carrinho:", error);
+                    alert("Erro ao obter carrinho. Tente novamente.");
+                });
+        }
+
+        // Função para recalcular o Total Geral do carrinho
+        function recalcularTotalGeral(carrinho) {
+
+            let totalGeral = 0;
+
+            // Itera pelos itens do carrinho e soma os subtotais
+            carrinho.carrinho.itens.forEach((item) => {
+                const subtotal = item.precoUnitario - (item.desconto || 0);
+                totalGeral += subtotal;
+            });
+
+            // Garantir que o total geral tenha 2 casas decimais
+            totalGeral = totalGeral.toFixed(2);
+
+            // Atualizar o Total Geral na interface
+            document.querySelector("#totalGeral").textContent = `${totalGeral}`;
+        }
+
+
+        document.getElementById("vendaSemIdentificacao").addEventListener("click", function () {
+
+            if (document.getElementById("vendaSemIdentificacao").checked) {
+
+                document.getElementById("clienteSelecionado").value = "Cliente não identificado";
+
+                // Enviar o ID do cliente para o backend para associá-lo ao carrinho
+                fetch(`/Vendas/AssociarClienteAoCarrinho`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clienteId: 0 })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.sucesso) {
+                            console.log("Cliente associado ao carrinho com sucesso!");
+                        } else {
+                            console.log("Erro ao associar cliente ao carrinho.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao associar cliente ao carrinho:", error);
+                    });
+            }
+
+        });
+
+        document.getElementById("buscarCliente").addEventListener("click", function () {
+            const cpf = document.getElementById("clienteCpf").value.trim();
+
+            if (!cpf) {
+                alert("Por favor, informe o CPF.");
+                return;
+            }
+
+            fetch(`/Clientes/BuscarClientePorCpf?cpf=${cpf}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        console.log("Dados do cliente:", data.cliente);
+
+                        document.getElementById("clienteSelecionado").value = `${data.cliente.cli_Nome}`;
+
+                        // Enviar o ID do cliente para o backend para associá-lo ao carrinho
+                        fetch(`/Vendas/AssociarClienteAoCarrinho`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ clienteId: data.cliente.cli_Id })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.sucesso) {
+                                    console.log("Cliente associado ao carrinho com sucesso!");
+                                } else {
+                                    console.log("Erro ao associar cliente ao carrinho.");
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Erro ao associar cliente ao carrinho:", error);
+                            });
+                    } else {
+                        alert(data.mensagem);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar cliente:", error);
+                    alert("Erro ao buscar cliente. Verifique o CPF e tente novamente.");
+                });
+        });
+
+
+        // FECHANADO A VENDA
+        document.getElementById("btnFecharVenda").addEventListener("click", function () {
+            fecharVenda();
+        });
+
+        function fecharVenda() {
+            if (!confirm("Deseja realmente fechar esta venda?")) {
+                return;
+            }
+
+            // Obter o carrinho atualizado antes de fechar o pedido
+            fetch('/Vendas/ObterCarrinhoAtualizado')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        const carrinhoAtualizado = data.carrinho;
+
+                        console.log("Carrinho para fechar a venda: ", data.carrinho);
+                        // NOVIDADE
+                        //alert("novidade")
+                        // Obter os pagamentos do modal
+                        const pagamentos = obterPagamentosDoModal();
+
+                        if (pagamentos.length === 0) {
+                            alert("Nenhum pagamento registrado. Por favor, registre os pagamentos antes de fechar a venda.");
+                            return;
+                        }
+
+                        console.log("Carrinho para fechar a venda: ", data.carrinho);
+                        console.log("Pagamentos registrados: ", pagamentos);
+
+
+                        // Adicionar os pagamentos ao carrinho antes de enviar
+                        carrinhoAtualizado.pagamentos = pagamentos;
+
+                        //alert("fim da novidade")
+                        //FIM DA NOVIDADE
+
+                        // Enviar o carrinho para finalizar a venda
+                        fetch('/Vendas/FinalizarVenda', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data.carrinho)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.sucesso) {
+                                    alert("Venda finalizada com sucesso!");
+                                    location.reload(); // Reseta a página para iniciar um novo fluxo
+                                } else {
+                                    alert("Erro ao finalizar a venda: " + data.mensagem);
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Erro ao finalizar a venda:", error);
+                                alert("Erro ao finalizar a venda. Tente novamente.");
+                            });
+                    } else {
+                        alert("Erro ao obter o carrinho atualizado.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao obter carrinho:", error);
+                    alert("Erro ao obter carrinho. Tente novamente.");
+                });
+        }
+
+        document.addEventListener("keydown", (event) => {
+            switch (event.key) {
+                case "F1":
+                    event.preventDefault(); // Evita comportamentos padrão, como ajuda do navegador.
+                    document.getElementById("buscaProduto").focus(); // Focar no campo de busca rápida.
+                    break;
+
+                case "F2":
+                    event.preventDefault();
+                    const descontoInput = document.getElementById("desconto");
+                    if (descontoInput) {
+                        descontoInput.focus(); // Focar no campo de desconto total.
+                    } else {
+                        alert("Campo de desconto total não encontrado.");
+                    }
+                    break;
+
+                case "F4":
+                    event.preventDefault();
+                    fecharVenda(); // Chama a função de fechamento da venda.
+                    break;
+
+                case "F12":
+                    event.preventDefault();
+                    const atalhosDiv = document.getElementById("atalhos");
+                    if (atalhosDiv) {
+                        atalhosDiv.style.display = atalhosDiv.style.display === "none" ? "block" : "none";
+                    }
+                    break;
+
+                default:
+                    break; // Não faz nada para outras teclas.
+            }
+        });
+
+        function obterPagamentosDoModal() {
+            const pagamentos = [];
+
+            // Garantir que os campos existem e capturar valores
+            const pixElement = document.getElementById('pix');
+            const debitoElement = document.getElementById('debito');
+            const creditoElement = document.getElementById('credito');
+            const dinheiroElement = document.getElementById('dinheiro');
+
+            if (!pixElement || !debitoElement || !creditoElement || !dinheiroElement) {
+                console.error("Um ou mais elementos não foram encontrados.");
+                return [];
+            }
+
+            const pix = tratarValor(pixElement.value);
+            const debito = tratarValor(debitoElement.value);
+            const credito = tratarValor(creditoElement.value);
+            const dinheiro = tratarValor(dinheiroElement.value);
+
+            console.log("PIX:", pix, "Débito:", debito, "Crédito:", credito, "Dinheiro:", dinheiro);
+
+            if (pix > 0) pagamentos.push({ meioPagamento: "PIX", valor: pix });
+            if (debito > 0) pagamentos.push({ meioPagamento: "Débito", valor: debito });
+            if (credito > 0) pagamentos.push({ meioPagamento: "Crédito", valor: credito });
+            if (dinheiro > 0) pagamentos.push({ meioPagamento: "Dinheiro", valor: dinheiro });
+
+            return pagamentos;
+        }
+
+        function tratarValor(valor) {
+            console.log("Valor original:", valor);
+            if (!valor) return 0;
+            valor = valor.replace(',', '.');
+            valor = valor.replace(/[^\d.]/g, '');
+            const valorNumerico = parseFloat(valor) || 0;
+            console.log("Valor tratado:", valorNumerico);
+            return valorNumerico;
+        }
+
+
+        function tratarValor(valor) {
+            console.log("Valor original:", valor); // Valor digitado
+            if (!valor) return 0;
+            valor = valor.replace(',', '.'); // Trocar vírgula por ponto
+            valor = valor.replace(/[^\d.]/g, ''); // Remover caracteres não numéricos
+            const valorNumerico = parseFloat(valor) || 0;
+            console.log("Valor tratado:", valorNumerico); // Após tratamento
+            return valorNumerico;
+        }
+
+
+        function exibirToast(mensagem, tipo = "success") {
+            const toastContainer = document.getElementById("toast-container");
+
+            // Criar o elemento do toast
+            const toast = document.createElement("div");
+            toast.className = `toast alert alert-${tipo} alert-dismissible fade show`;
+            toast.style.minWidth = "200px";
+            toast.style.marginBottom = "10px";
+            toast.role = "alert";
+
+            // Conteúdo do toast
+            toast.innerHTML = `
+                        ${mensagem}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+
+            // Adicionar o toast ao contêiner
+            toastContainer.appendChild(toast);
+
+            // Remover o toast após 3 segundos
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 500); // Tempo para fade out
+            }, 3000);
+        }
+
+        // NOVIDADES DO MODAL
+        // Script para calcular o valor restante e aplicar máscaras
+
+        let totalCompra = 0; // Variável para armazenar o valor total da compra
+
+
+        // Captura o valor do total no momento em que o botão é clicado
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("btnAbrirModalPagamento").addEventListener("click", function () {
+                totalCompra = parseFloat(document.getElementById("totalGeral").innerText) || 0;
+                document.getElementById("valorTotalCompra").value = `R$ ${totalCompra.toFixed(2).replace('.', ',')}`;
+                document.getElementById("valorRestante").value = `R$ ${totalCompra.toFixed(2).replace('.', ',')}`;
+                document.getElementById("troco").value = "R$ 0,00"; // Resetar troco
+            });
+        });
+
+
+       // alert(totalCompra);
+       // alert(totalCompra2);
+
+        function aplicarMascara(valor) {
+            return valor
+                .replace(/\D/g, "") // Remove qualquer caractere não numérico
+                .replace(/(\d)(\d{2})$/, "$1,$2") // Coloca a vírgula antes dos últimos 2 dígitos
+                .replace(/(?=(\d{3})+(\D))\B/g, "."); // Coloca o ponto a cada 3 dígitos antes da vírgula
+        }
+
+        function atualizarValorRestante() {
+            const pix = parseFloat(document.getElementById('pix').value) || 0;
+            const debito = parseFloat(document.getElementById('debito').value) || 0;
+            const credito = parseFloat(document.getElementById('credito').value) || 0;
+            const dinheiro = parseFloat(document.getElementById('dinheiro').value) || 0;
+
+            const totalPago = pix + debito + credito + dinheiro;
+            const valorRestante = Math.max(0, totalCompra - totalPago).toFixed(2);
+
+            document.getElementById('valorRestante').value = `R$ ${valorRestante}`;
+        }
+
+        function extrairValor(mascara) {
+            return parseFloat(mascara.replace("R$", "").replace(".", "").replace(",", ".")) || 0;
+        }
+
+        function atualizarValorRestante() {
+            const pix = extrairValor(document.getElementById("pix").value);
+            const debito = extrairValor(document.getElementById("debito").value);
+            const credito = extrairValor(document.getElementById("credito").value);
+            const dinheiro = extrairValor(document.getElementById("dinheiro").value);
+
+            const totalPago = pix + debito + credito + dinheiro;
+            const valorRestante = Math.max(0, totalCompra - totalPago).toFixed(2);
+
+            //troco
+            const troco = Math.max(0, totalPago - totalCompra).toFixed(2);
+            document.getElementById("troco").value = dinheiro > 0 && troco > 0 ? `R$ ${troco.replace('.', ',')}` : "R$ 0,00";
+
+            document.getElementById("valorRestante").value = `R$ ${aplicarMascara(valorRestante.toString())}`;
+
+        }
+
+        // Adicionar máscaras aos inputs
+        document.querySelectorAll("#formPagamento input").forEach((input) => {
+            input.addEventListener("input", (event) => {
+                const valorComMascara = aplicarMascara(event.target.value);
+                event.target.value = `R$ ${valorComMascara}`;
+                atualizarValorRestante();
+            });
+        });
+
+        function finalizarPagamento() {
+            const valorRestante = extrairValor(document.getElementById("valorRestante").value);
+
+            if (valorRestante > 0) {
+                alert("O valor não foi completamente pago.");
+            } else {
+                alert("Pagamento concluído com sucesso!");
+                // Enviar os dados para o backend, se necessário
+            }
+        }
+
+
+    </script>
+}

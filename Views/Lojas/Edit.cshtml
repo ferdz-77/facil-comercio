@@ -1,0 +1,64 @@
+﻿@model FacilComercio.Models.Loja
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Loja</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Loj_Id" />
+            <div class="form-group">
+                <label asp-for="Loj_EmpresaId" class="control-label"></label>
+                <select asp-for="Loj_EmpresaId" class="form-control" asp-items="ViewBag.EmpresaId"></select>
+                <span asp-validation-for="Loj_EmpresaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Loj_Nome" class="control-label"></label>
+                <input asp-for="Loj_Nome" class="form-control" />
+                <span asp-validation-for="Loj_Nome" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Loj_Endereco" class="control-label"></label>
+                <input asp-for="Loj_Endereco" class="form-control" />
+                <span asp-validation-for="Loj_Endereco" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Loj_ContatoEm" class="control-label"></label>
+                <input asp-for="Loj_ContatoEm" class="form-control" />
+                <span asp-validation-for="Loj_ContatoEm" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Loj_Criado" class="control-label"></label>
+                <input asp-for="Loj_Criado" class="form-control" />
+                <span asp-validation-for="Loj_Criado" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Loj_AtualizadoEm" class="control-label"></label>
+                <input asp-for="Loj_AtualizadoEm" class="form-control" />
+                <span asp-validation-for="Loj_AtualizadoEm" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Loj_CriadoPor" class="control-label"></label>
+                <select asp-for="Loj_CriadoPor" class="form-control" asp-items="ViewBag.CriadoPor"></select>
+                <span asp-validation-for="Loj_CriadoPor" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

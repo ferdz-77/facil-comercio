@@ -1,0 +1,245 @@
+﻿@model IEnumerable<FacilComercio.Models.Venda>
+
+@{
+    ViewData["Title"] = "Devoluções";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <!-- Cabeçalho da página -->
+    <h2 class="text-center mb-4">Ponto de Venda - Devoluções</h2>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="@Url.Action("Index")">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="busca" class="form-label">Nome do Cliente</label>
+                        <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome do cliente"
+                               value="@ViewContext.HttpContext.Request.Query["busca"]" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="cpf" class="form-label">CPF</label>
+                        <input type="text" id="cpf" name="cpf" class="form-control" placeholder="Digite o CPF"
+                               value="@ViewContext.HttpContext.Request.Query["cpf"]" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="vendaId" class="form-label">Código da Venda</label>
+                        <input type="number" id="vendaId" name="vendaId" class="form-control" placeholder="Digite o código"
+                               value="@ViewContext.HttpContext.Request.Query["vendaId"]" />
+                    </div>
+                </div>
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <label for="dataInicio" class="form-label">Data Inicial</label>
+                        <input type="date" id="dataInicio" name="dataInicio" class="form-control"
+                               value="@ViewContext.HttpContext.Request.Query["dataInicio"]" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="dataFim" class="form-label">Data Final</label>
+                        <input type="date" id="dataFim" name="dataFim" class="form-control"
+                               value="@ViewContext.HttpContext.Request.Query["dataFim"]" />
+                    </div>
+                </div>
+                <div class="mt-3 row">
+                    <div class="col-md-9">
+                        <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-block">Limpar Filtro</a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Vendas -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Total (R$)</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                foreach (var venda in Model)
+                {
+                    <tr>
+                        <td>@venda.Ven_Id</td>
+                        <td>@venda.Data.ToString("dd/MM/yyyy")</td>
+                        <td>@(venda.Cli_Nome ?? "Venda não identificada")</td>
+                        <td>@venda.Total.ToString("N2")</td>
+                        <td>
+                            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalProdutos" data-id="@venda.Ven_Id">
+                                Visualizar Produtos
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center">Nenhuma devolução encontrada.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Paginação -->
+    @if (ViewBag.TotalPaginas > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                @if (ViewBag.PaginaAtual > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { pagina = ViewBag.PaginaAtual - 1 })">Anterior</a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == ViewBag.PaginaAtual ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { pagina = i })">@i</a>
+                    </li>
+                }
+                @if (ViewBag.PaginaAtual < ViewBag.TotalPaginas)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { pagina = ViewBag.PaginaAtual + 1 })">Próxima</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+<!-- Modal para Produtos -->
+<div class="modal fade" id="modalProdutos" tabindex="-1" aria-labelledby="modalProdutosLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalProdutosLabel">Produtos da Venda</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Lista de Produtos -->
+                <div id="produtosList">
+                    <!-- A lista de produtos será gerada dinamicamente aqui -->
+                </div>
+                <!-- Botão para Devolver -->
+                <div class="mt-3">
+                    <button type="button" class="btn btn-danger" id="btnDevolverProdutos">Devolver Selecionados</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+       
+
+        $(document).ready(function () {
+            // Captura o ID da venda ao clicar no botão de abrir o modal
+            $('.btn-info').on('click', function () {
+                var vendaId = $(this).data('id');
+                $('#modalProdutos').data('venda-id', vendaId);  // Armazena o ID da venda no modal
+            })
+
+
+            // Teste para ver se o evento de clique está funcionando
+            $('[data-bs-toggle="modal"]').on('click', function () {
+                // Abra o modal manualmente
+                var myModal = new bootstrap.Modal(document.getElementById('modalProdutos'));
+                myModal.show();
+            });
+        });
+
+        // A função que será chamada quando o modal for exibido
+        $('#modalProdutos').on('show.bs.modal', function (event) {
+
+            var vendaId = $(this).data('venda-id');  // Recupera o valor armazenado
+            console.log("Venda ID: ", vendaId);
+
+            // Limpar a lista de produtos
+            $('#produtosList').html('');
+
+            // Fazer uma requisição AJAX para buscar os produtos da venda
+            $.ajax({
+                url: '/Venda/GetProdutos/' + vendaId, // Rota para buscar os produtos da venda
+                type: 'GET',
+                success: function (data) {
+                    
+                    // Verificar se os produtos foram retornados
+                    if (data && data.length > 0) {
+                       
+                        // Gerar a lista de produtos com checkboxes
+                        var produtosHtml = '';
+                        data.forEach(function (produto) {
+                           
+                            produtosHtml += `
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="${produto.prod_Id}" id="produto${produto.prod_Id}">
+                                    <label class="form-check-label" for="produto${produto.ProdutoId}">
+                                    ${produto.prod_Nome} - R$ ${produto.prod_Preco}
+                                    </label>
+                                </div>
+                            `;
+                        });
+                       
+
+                        // Adicionar os produtos ao modal
+                        $('#produtosList').html(produtosHtml);
+                    } else {
+                        $('#produtosList').html('<p>Não há produtos para esta venda.</p>');
+                    }
+                },
+                error: function () {
+                    $('#produtosList').html('<p>Erro ao carregar os produtos.</p>');
+                }
+            });
+        });
+
+        // Função para processar a devolução dos produtos selecionados
+        $('#btnDevolverProdutos').on('click', function () {
+            var produtosSelecionados = [];
+            var vendaId = $('#modalProdutos').data('venda-id');
+
+            // Obter os produtos selecionados
+            $('input[type="checkbox"]:checked').each(function () {
+                produtosSelecionados.push($(this).val());
+            });
+
+
+            if (produtosSelecionados.length > 0) {
+
+                // Enviar a devolução para o servidor
+                $.ajax({
+                    url: '/Venda/DevolverProdutos/' + vendaId, // Envia o ID como parte da URL
+                    type: 'POST',
+                    contentType: 'application/json', // Especifica que o conteúdo é JSON
+                    data: JSON.stringify(produtosSelecionados), // Converte a lista de produtos para JSON
+                    success: function () {
+                        alert('Produtos devolvidos com sucesso!');
+                        location.reload(); // Recarregar a página para atualizar a lista de devoluções
+                    },
+                    error: function () {
+                        alert('Erro ao devolver os produtos.');
+                    }
+                });
+            } else {
+                alert('Selecione ao menos um produto para devolver.');
+            }
+        });
+
+    </script>
+}

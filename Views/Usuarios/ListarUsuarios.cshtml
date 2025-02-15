@@ -1,0 +1,68 @@
+﻿@using FacilComercio.Models.DTOs
+@model IEnumerable<UsuarioListagemDto>
+@{
+    ViewData["Title"] = "Inserir Usuário";
+    Layout = "_Layout"; // Define o layout principal com _Nav, _Sidebar e _Footer
+}
+<!-- Content Row 2 -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12 mb-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Usuários da Loja</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>E-mail</th>
+                                    <th>Telefone</th>
+                                    <th>CPF</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.Usuarios != null && ViewBag.Usuarios.Count > 0)
+                                {
+                                    foreach (var usuario in ViewBag.Usuarios)
+                                    {
+                                        <tr class="@(usuario.Usu_Status ? "" : "text-danger")">
+                                            <td>@usuario.Usu_Nome</td>
+                                            <td>@usuario.Usu_Email</td>
+                                            <td>@usuario.Usu_Telefone</td>
+                                            <td>@usuario.Usu_CPF</td>
+                                            <td>
+                                                <button class="btn btn-sm @((usuario.Usu_Status ? "btn-success" : "btn-danger"))"
+                                                        onclick="toggleStatus(@usuario.Usu_Id, @usuario.Usu_Status.ToString().ToLower())">
+                                                    @if (usuario.Usu_Status)
+                                                    {
+                                                        <span>Ativo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Inativo</span>
+                                                    }
+                                                </button>
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center">Nenhum usuário encontrado.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

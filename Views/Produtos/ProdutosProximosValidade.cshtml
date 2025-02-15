@@ -1,0 +1,73 @@
+﻿@model IEnumerable<FacilComercio.Models.ProdutosProximosValidadeViewModel>
+@{
+    ViewData["Title"] = "Relatório de Produtos Próximos à Validade";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Relatório de Produtos Próximos à Validade</h1>
+
+    <div class="text-right mb-3">
+        <a class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+           asp-action="ExportarRelatorioProdutosProximoVencimento"
+           asp-route-dataInicio="@ViewContext.HttpContext.Request.Query["diasParaValidade"]"
+           asp-route-usuId="@ViewContext.HttpContext.Request.Query["categoria"]">
+            <i class="fas fa-download fa-sm text-white-50"></i> Exportar Relatório PDF
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="diasParaValidade">Dias para Validade:</label>
+                    <input type="number" class="form-control" id="diasParaValidade" name="diasParaValidade"
+                           value="@ViewContext.HttpContext.Request.Query["diasParaValidade"]" />
+                </div>
+                <div class="col-md-3">
+                    <label for="categoria">Categoria:</label>
+                    <input type="text" class="form-control" id="categoria" name="categoria"
+                           value="@ViewContext.HttpContext.Request.Query["categoria"]" />
+                </div>
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+            </form>
+
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Lote</th>
+                        <th>Data Validade</th>
+                        <th>Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var produto in Model)
+                        {
+                            <tr>
+                                <td>@produto.Prod_Id</td>
+                                <td>@produto.Prod_Nome</td>
+                                <td>@produto.Categoria</td>
+                                <td>@produto.Lote_Numero</td>
+                                <td>@produto.Lote_DataValidade.ToString("dd/MM/yyyy")</td>
+                                <td>@produto.Lote_Quantidade</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">Nenhum produto encontrado nos critérios selecionados.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

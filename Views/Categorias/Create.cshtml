@@ -1,0 +1,63 @@
+﻿@model FacilComercio.Models.Categoria
+@{
+    ViewData["Title"] = "Cadastro de Categoria";
+    Layout = "_Layout"; // Define o layout principal
+
+    if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="redirectAfterClose()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+}
+<script>
+    function redirectAfterClose() {
+        // Obtém o formulário pelo ID ou classe
+        const form = document.querySelector("form"); // Substitua pelo seletor apropriado, se necessário
+
+        if (form) {
+            // Reseta todos os campos do formulário
+            form.reset();
+        }
+
+        // Opcional: Remover mensagens de sucesso ou erro, se existirem
+        const alert = document.querySelector(".alert");
+        if (alert) {
+            alert.remove();
+        }
+    }
+
+</script>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Cadastro de Categoria</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Create" method="post" class="row g-3">
+                <!-- Primeira Linha -->
+                <div class="col-md-2">
+                    <label asp-for="Cat_Titulo" class="form-label">Título da Categoria</label>
+                    <input asp-for="Cat_Titulo" id="Prod_EAN" class="form-control" required />
+                    <span asp-validation-for="Cat_Titulo" class="text-danger"></span>
+                </div>
+                
+                <!-- Segunda Linha -->
+                <div class="col-md-12">
+                    <label asp-for="Cat_Descricao" class="form-label">Descrição</label>
+                    <textarea asp-for="Cat_Descricao" id="Prod_Descricao" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Cat_Descricao" class="text-danger"></span>
+                </div>
+                <!-- FIM NOVO FORMATO-->
+                <!-- Botões de Ação -->
+                <div class="col-md-12 mt-4">
+                    <button type="submit" class="btn btn-primary">Salvar Categoria</button>
+                    <a href="@Url.Action("Index", "Produtos")" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+﻿@model FacilComercio.Models.Categoria
+
+@{
+    ViewData["Title"] = "Editar Produto";
+    Layout = "_Layout"; // Define o layout principal com _Nav, _Sidebar e _Footer
+
+    if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+}
+
+<script>
+    function redirectAfterClose() {
+        // Redireciona para a página de listagem de Categorias
+        window.location.href = '@Url.Action("ListarCategorias", "Categorias")';
+    }
+</script>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Editar Categoria</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Cat_Id" />
+
+                <div class="form-group">
+                    <label asp-for="Cat_Titulo" class="control-label"></label>
+                    <input asp-for="Cat_Titulo" class="form-control" />
+                    <span asp-validation-for="Cat_Titulo" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Cat_Descricao" class="control-label"></label>
+                    <textarea asp-for="Cat_Descricao" class="form-control"></textarea>
+                    <span asp-validation-for="Cat_Descricao" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a asp-action="ListarCategorias" class="btn btn-secondary">Voltar</a>
+            </form>
+        </div>
+    </div>
+
+</div>

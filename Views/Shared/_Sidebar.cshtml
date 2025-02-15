@@ -1,0 +1,169 @@
+﻿@{
+    var permissao = ViewBag.Permissao as string;
+}
+
+@if (permissao == "Master")
+{
+    @* <canvas>COLOCAR O HTML AQUI DENTRO</canvas> *@
+}
+
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+        <div class="sidebar-brand-text mx-3">Fácil Comercio</div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+
+    <!-- Nav Item - Dashboard -->
+    <li class="nav-item active">
+        <a class="nav-link" href="/">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    @*  <div class="sidebar-heading">
+    ADMNISTRADOR
+    </div> *@
+
+    @*  <!-- Nav Item - Cadastros Menu -->
+    <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+    aria-expanded="true" aria-controls="collapseUtilities">
+    <i class="fas fa-fw fa-wrench"></i>
+    <span>Cadastro</span>
+    </a>
+    <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+    data-parent="#accordionSidebar">
+    <div class="bg-white py-2 collapse-inner rounded">
+    <a class="collapse-item" href="javascript:void(0);">Lojas</a>
+    <!-- Link ajustado para a página de criação de Vendedores -->
+    <a class="collapse-item" asp-controller="Usuarios" asp-action="Create">Vendedores</a>
+    <a class="collapse-item" asp-controller="Clientes" asp-action="Create">Clientes</a>
+
+    </div>
+    </div>
+    </li> *@
+
+    <!-- Nav Item - Produtos Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProdutos"
+           aria-expanded="true" aria-controls="collapseProdutos">
+            <i class="fas fa-users"></i>
+            <span>Produtos</span>
+        </a>
+        <div id="collapseProdutos" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" asp-action="ListarProdutos" asp-controller="Produtos">Listar Produtos</a>
+                <a class="collapse-item" href="@Url.Action("Create", "Produtos")">Adicionar Produtos</a>
+                <a class="collapse-item" asp-action="CadastrarLote" asp-controller="Produtos">Adicionar Lotes</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Nav Item - Categoria Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseCategorias"
+           aria-expanded="true" aria-controls="collapseCategorias">
+            <i class="fas fa-users"></i>
+            <span>Categorias</span>
+        </a>
+        <div id="collapseCategorias" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" asp-action="ListarCategorias" asp-controller="Categorias">Listar Categorias</a>
+                <a class="collapse-item" href="@Url.Action("Create", "Categorias")">Adicionar Categorias</a>
+                @* <a class="collapse-item" href="javascript:voic(0);">Editar Produtos</a> *@
+            </div>
+        </div>
+    </li>
+
+    <!-- Nav Item - Clientes Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClientes"
+           aria-expanded="true" aria-controls="collapseClientes">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+        </a>
+        <div id="collapseClientes" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" asp-action="ListarClientes" asp-controller="Clientes">Listar Clientes</a>
+                <a class="collapse-item" asp-controller="Clientes" asp-action="Create">Adicionar Cliente</a>
+                <a class="collapse-item" href="javascript:voic(0);">Editar Cliente</a>
+            </div>
+        </div>
+    </li>
+
+
+    <!-- Nav Item - Vendedores Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseVendedores"
+           aria-expanded="true" aria-controls="collapseVendedores">
+            <i class="fas fa-user-tie"></i>
+            <span>Vendedores</span>
+        </a>
+        <div id="collapseVendedores" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" asp-action="ListarUsuarios" asp-controller="Usuarios">Listar Vendedores</a>
+                <a class="collapse-item" asp-controller="Usuarios" asp-action="Create">Adicionar Vendedores</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Nav Item - PDV Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePDV"
+           aria-expanded="true" aria-controls="collapsePDV">
+            <i class="fas fa-user-tie"></i>
+            <span>PDV</span>
+        </a>
+        <div id="collapsePDV" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" asp-action="PDV" asp-controller="Vendas">Fazer Vendas</a>
+                <a class="collapse-item" asp-controller="Devolucoes" asp-action="Index">Devolução de Produto</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Nav Item - Relatórios -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#menuRelatorios"
+           aria-expanded="true" aria-controls="menuRelatorios">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Relatórios</span>
+        </a>
+        <div id="menuRelatorios" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" asp-action="ProdutosProximosValidade" asp-controller="Produtos">Produtos Validade</a>
+                <a class="collapse-item" asp-action="LotesProximosValidade" asp-controller="Produtos">Lotes Próximos</a>
+                <a class="collapse-item" asp-action="VendasPorPeriodo" asp-controller="Vendas">Vendas por Período</a>
+                <a class="collapse-item" asp-action="VendasPorVendedor" asp-controller="Vendas">Vendas por Vendedor</a>
+                <a class="collapse-item" asp-action="MovimentacoesEstoque" asp-controller="Produtos">Movimentação Estoque</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>

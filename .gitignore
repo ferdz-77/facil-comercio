@@ -1,0 +1,40 @@
+﻿# Diretórios do Visual Studio
+.vs/
+.vscode/
+
+# Build e artefatos
+bin/
+obj/
+out/
+publish/
+
+# Configuração do usuário do Visual Studio
+*.user
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docstates
+
+# Logs e depuração
+*.log
+logs/
+Debug/
+Trace/
+
+# Configuração do Azure
+local.settings.json
+
+# Configuração de ambiente
+.env
+secrets.json
+
+# Dependências (caso use Node.js junto no projeto)
+node_modules/
+
+# Arquivos gerados pelo sistema
+Thumbs.db
+.DS_Store
+
+# Dados temporários
+wwwroot/dist/
+wwwroot/node_modules/

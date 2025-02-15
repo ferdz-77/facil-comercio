@@ -1,0 +1,75 @@
+﻿@model FacilComercio.Models.Cliente
+
+@{
+    ViewData["Title"] = "Editar Cliente";
+    Layout = "_Layout"; // Define o layout principal com _Nav, _Sidebar e _Footer
+
+    if (ViewData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ViewData["MensagemSucesso"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="redirectAfterClose()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+}
+
+<script>
+    function redirectAfterClose() {
+        // Redireciona para a página de listagem de clientes
+        window.location.href = '@Url.Action("ListarClientes", "Clientes")';
+    }
+</script>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Editar Cliente</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Edit" method="post" class="form-signin">
+                <input type="hidden" asp-for="Cli_Id" />
+
+                <div class="form-group mb-3">
+                    <label for="Cli_Nome">Nome</label>
+                    <input type="text" class="form-control" id="Cli_Nome" name="Cli_Nome" value="@Model.Cli_Nome" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="Cli_Email">Email</label>
+                    <input type="email" class="form-control" id="Cli_Email" name="Cli_Email" value="@Model.Cli_Email" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Cli_Telefone" class="control-label">Telefone</label>
+                    <input asp-for="Cli_Telefone" class="form-control" type="tel" id="telefone" />
+                    <span asp-validation-for="Cli_Telefone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="Cli_Endereco">Endereco</label>
+                    <input type="text" class="form-control" id="Cli_Endereco" name="Cli_Endereco" value="@Model.Cli_Endereco" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Cli_CPF" class="control-label">CPF</label>
+                    <input asp-for="Cli_CPF" class="form-control-plaintext" id="cpf" readonly />
+                    <span asp-validation-for="Cli_CPF" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Carregar jQuery e jQuery Mask Plugin -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+    <script>
+        // Máscara para o campo Telefone
+        $('#telefone').mask('(00) 00000-0000');
+    </script>
+}
